@@ -18,8 +18,8 @@ namespace Consumer
             {
                 using (var channel = connection.CreateModel())
                 {
-                    channel.QueueDeclare(queue: "test_durable_Is_False",
-                                            durable: false,
+                    channel.QueueDeclare(queue: "test_durable_Is_True",
+                                            durable: true,
                                             exclusive: false,
                                             autoDelete: false,
                                             arguments: null);
@@ -35,19 +35,17 @@ namespace Consumer
                         var body = ea.Body.ToArray();
                         var message = Encoding.UTF8.GetString(body);
                         Console.WriteLine($" [x] Received {message}");
-                        Console.WriteLine($" [x] Received {message}");
+
 
                         int dots = message.Split('.').Length - 1;
                         Thread.Sleep(dots * 1000);
 
                         Console.WriteLine(" [x] Done");
                         channel.BasicAck(deliveryTag: ea.DeliveryTag, multiple: false);
-
-
                     };
 
 
-                    channel.BasicConsume(queue: "test_durable_Is_False",
+                    channel.BasicConsume(queue: "test_durable_Is_True",
                      autoAck: false,
                      consumer: consumer);
 

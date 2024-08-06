@@ -18,6 +18,7 @@ namespace Producer
                 using (var channel = connection.CreateModel())
                 {
                     channel.QueueDeclare(queue: "test_durable_Is_True",
+                        // 队列持久化
                         durable: true,
                         exclusive: false,
                         autoDelete: false,
@@ -27,10 +28,13 @@ namespace Producer
 
 
                     var body = Encoding.UTF8.GetBytes(message);
+                    // 消息持久化
+                    var properties = channel.CreateBasicProperties();
+                    properties.Persistent = true;
 
                     channel.BasicPublish(exchange: string.Empty,
                     routingKey: "test_durable_Is_True",
-                    basicProperties: null,
+                    basicProperties: properties,
                     body: body);
 
 
