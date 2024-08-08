@@ -7,37 +7,31 @@ using System.Threading.Tasks;
 
 namespace Producer
 {
-    internal class WorkQueues
+
+    internal class Fanout
     {
-        static void Main2(string[] args)
+        static void Main3(string[] args)
         {
+            // 连接
             // 如果我们想连接到另一台机器上的节点，我们只需在此处指定其主机名或 IP 地址即可。
             var factory = new ConnectionFactory { HostName = "localhost" };
             using (var connection = factory.CreateConnection())
             {
-
+                // 创建通道
                 using (var channel = connection.CreateModel())
                 {
-                    channel.QueueDeclare(queue: "test_durable_Is_True",
-                        // 队列持久化
-                        durable: true,
-                        exclusive: false,
-                        autoDelete: false,
-                        arguments: null);
-                    
+                    // 交换器
+                    channel.ExchangeDeclare(exchange: "Test_Exchange_IS_Logs", type: ExchangeType.Fanout);
+
+                    // 数据
                     var message = GetMessage(args);
-
-
                     var body = Encoding.UTF8.GetBytes(message);
-                    // 消息持久化   “properties 特性”
-                    var properties = channel.CreateBasicProperties();
-                    properties.Persistent = true;
 
-                    channel.BasicPublish(exchange: string.Empty,
-                    routingKey: "test_durable_Is_True",
-                    basicProperties: properties,
-                    body: body);
-
+                    // 推送数据
+                    channel.BasicPublish(exchange: "Test_Exchange_IS_Logs",
+                                        routingKey: string.Empty,
+                                        basicProperties: null,
+                                        body: body);
 
                     Console.WriteLine($" [x] Sent {message}");
 

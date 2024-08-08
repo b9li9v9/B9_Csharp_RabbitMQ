@@ -8,9 +8,10 @@ using System.Threading.Tasks;
 
 namespace Consumer
 {
-    internal class WorkQueues
+    internal class Fanout
     {
-        static void Main2(string[] args)
+
+        static void Main3(string[] args)
         {
             // 如果我们想连接到另一台机器上的节点，我们只需在此处指定其主机名或 IP 地址即可。
             var factory = new ConnectionFactory { HostName = "localhost" };
@@ -18,17 +19,15 @@ namespace Consumer
             {
                 using (var channel = connection.CreateModel())
                 {
-                    channel.QueueDeclare(queue: "test_durable_Is_True",
-                                            durable: true,
-                                            exclusive: false,
-                                            autoDelete: false,
-                                            arguments: null);
+                    channel.ExchangeDeclare(exchange: "Test_Exchange_IS_Logs", type: ExchangeType.Fanout);
 
-                    // 这告诉 RabbitMQ 不要一次向工作线程提供多条消息。换言之，在工作人员处理并确认前一条消息之前，不要将新消息分派给工作人员。
-                    channel.BasicQos(prefetchSize: 0, prefetchCount: 1, global: false);
+                    var queueName = channel.QueueDeclare().QueueName;
 
+                    channel.QueueBind(queue: queueName,
+                                      exchange: "Test_Exchange_IS_Logs",
+                                      routingKey: string.Empty);
 
-                    Console.WriteLine(" [*] Waiting for messages.");
+                    Console.WriteLine(" [*] Waiting for test_durable_Is_True.");
 
                     var consumer = new EventingBasicConsumer(channel);
 
@@ -48,7 +47,7 @@ namespace Consumer
                     };
 
 
-                    channel.BasicConsume(queue: "test_durable_Is_True",
+                    channel.BasicConsume(queue: queueName,
                      autoAck: false,
                      consumer: consumer);
 
@@ -62,4 +61,3 @@ namespace Consumer
 
     }
 }
-
